@@ -15,7 +15,7 @@ public class JavaProject {
     public static void main(String[] args) {
         JFrame myFrame = new JFrame();
         myFrame.setTitle("Draw Lines");
-        myFrame.setSize(900, 600);
+        myFrame.setSize(1200, 800);
         myFrame.setLocationRelativeTo(null);
         
         Panel myPanel = new Panel();
