@@ -4,9 +4,13 @@
  */
 package lamp.javaproject;
 
+import java.awt.BasicStroke;
 import pkg1.*;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Stroke;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -27,46 +31,52 @@ import javax.swing.JRadioButton;
  */
 public class Panel extends JPanel implements ActionListener {
 
+    Stroke stroke;
     private int x1, y1, x2, y2;
     private Vector<Rectangle> recVect;
     private Vector<Rectangle> fillRecVect;
+    private Vector<Rectangle> dashedRecVect;
     private Vector<Rectangle> earserVect;
     private Vector<Line> lineVect;
     private Vector<Circle> circleVect;
     private Vector<Circle> fillCircleVect;
     private Vector<Circle> freeHandVect;
-    boolean checkrec, checkcir, checkline, checkclear, checkfill, checkearser,checkfreehand;
-    JRadioButton rec, circle, line,earser,freehand;
-    
-    JButton red, green, blue, clear;
-    JCheckBox fill;
+    boolean checkrec, checkcir, checkline, checkclear, checkfill, checkearser, checkfreehand, checkdashed;
+    JRadioButton rec, circle, line, earser, freehand;
+
+    JButton red, green, blue, clear,undo;
+    JCheckBox fill, dashed;
     int color;//to hold color value when user press color button and store it in shapes objects
 
     public Panel() {
 
-        checkrec = checkcir = checkline = checkfill =checkfreehand= false; //to know which radiobuttom checked
+        checkrec = checkcir = checkline = checkfill = checkfreehand = checkdashed = false; //to know which radiobuttom checked
         x1 = y1 = x2 = y2 = 0;
 
         recVect = new Vector<Rectangle>();
         fillRecVect = new Vector<Rectangle>();
-        earserVect=new Vector<Rectangle>();
+        dashedRecVect = new Vector<Rectangle>();
+        earserVect = new Vector<Rectangle>();
         lineVect = new Vector<Line>();
         circleVect = new Vector<Circle>();
         fillCircleVect = new Vector<Circle>();
-        freeHandVect=new Vector<Circle>();
+        freeHandVect = new Vector<Circle>();
         // create radiobutton for shapes
         rec = new JRadioButton("Rectangle", false);
+
         circle = new JRadioButton("circle", false);
         line = new JRadioButton("line", false);
         earser = new JRadioButton("earser", false);
-        freehand=new JRadioButton("Free Hand",false);
+        freehand = new JRadioButton("Free Hand", false);
 //create button for color
         red = new JButton("Red");
         green = new JButton("Green");
         blue = new JButton("Blue");
         clear = new JButton("Clear");
+        
         //create check box for fill shape
         fill = new JCheckBox("Fill");
+        dashed = new JCheckBox("Dashed");
 //create a buttongroup for radio buttons to make sure that only one radio button is checked        
         ButtonGroup group = new ButtonGroup();
 
@@ -76,17 +86,20 @@ public class Panel extends JPanel implements ActionListener {
         group.add(line);
         group.add(earser);
         group.add(freehand);
+        //group.add(dashed);
         //to make action when click on radio button
         rec.addActionListener(this);
         circle.addActionListener(this);
         line.addActionListener(this);
         earser.addActionListener(this);
         freehand.addActionListener(this);
+        dashed.addActionListener(this);
         //to make action when click on the color
         red.addActionListener(this);
         green.addActionListener(this);
         blue.addActionListener(this);
         clear.addActionListener(this);
+        
         //to make action when choose fill
         fill.addActionListener(this);
         // to display the radiobutton on the panel
@@ -95,6 +108,7 @@ public class Panel extends JPanel implements ActionListener {
         this.add(line);
         this.add(earser);
         this.add(freehand);
+        this.add(dashed);
         //to display the color buttons on the panel
         this.add(red);
         this.add(green);
@@ -102,6 +116,7 @@ public class Panel extends JPanel implements ActionListener {
         this.add(clear);
         //to display Fill checkbox on the panel
         this.add(fill);
+        
         this.setBackground(Color.white);
 
         this.setFocusable(true);
@@ -115,8 +130,8 @@ public class Panel extends JPanel implements ActionListener {
             public void mousePressed(MouseEvent e) {
                 x1 = e.getX();
                 y1 = e.getY();
-                 if(checkearser==true){    
-                earserVect.add(new Rectangle(x1, y1, 5, 5, color));
+                if (checkearser == true) {
+                    earserVect.add(new Rectangle(x1, y1, 5, 5, color,stroke));
                 }
             }
 
@@ -130,26 +145,26 @@ public class Panel extends JPanel implements ActionListener {
                     if (checkfill == true) {
                         int width = Math.abs(x1 - x2);
                         int height = Math.abs(y1 - y2);
-                        fillRecVect.add(new Rectangle(x1, y1, width, height, color));
+                        fillRecVect.add(new Rectangle(x1, y1, width, height, color,stroke));
                     } else {
                         int width = Math.abs(x1 - x2);
                         int height = Math.abs(y1 - y2);
-                        recVect.add(new Rectangle(x1, y1, width, height, color));
+                        recVect.add(new Rectangle(x1, y1, width, height, color,stroke));
                     }
                 } else if (checkline == true) {
-                    lineVect.add(new Line(x1, y1, x2, y2, color));
+                    lineVect.add(new Line(x1, y1, x2, y2, color, stroke));
                 } else if (checkcir == true) {
                     if (checkfill == true) {
                         int width = Math.abs(x1 - x2);
                         int height = Math.abs(y1 - y2);
-                        fillCircleVect.add(new Circle(x1, y1, width, height, color));
+                        fillCircleVect.add(new Circle(x1, y1, width, height, color,stroke));
                     } else {
                         int width = Math.abs(x1 - x2);
                         int height = Math.abs(y1 - y2);
-                        circleVect.add(new Circle(x1, y1, width, height, color));
+                        circleVect.add(new Circle(x1, y1, width, height, color,stroke));
                     }
                 }
-                
+
             }
 
             @Override
@@ -166,18 +181,16 @@ public class Panel extends JPanel implements ActionListener {
         this.addMouseMotionListener(new MouseMotionListener() {
             @Override
             public void mouseDragged(MouseEvent e) {
-               Graphics g=getGraphics();
+                Graphics g = getGraphics();
                 x2 = e.getX();
                 y2 = e.getY();
-               if(checkearser==true){
-                   g.setColor(Color.WHITE);
-               g.fillRect(e.getX(), e.getY(), 15,15);
-               earserVect.add(new Rectangle(e.getX(), e.getY(), 15, 15, color));
-               }
-               else if(checkfreehand==true)
-                {
-                g.fillOval(e.getX(), e.getY(), 5, 5);
-                freeHandVect.add(new Circle(e.getX(), e.getY(), 5, 5, color));
+                if (checkearser == true) {
+                    g.setColor(Color.WHITE);
+                    g.fillRect(e.getX(), e.getY(), 15, 15);
+                    earserVect.add(new Rectangle(e.getX(), e.getY(), 15, 15, color,stroke));
+                } else if (checkfreehand == true) {
+                    g.fillOval(e.getX(), e.getY(), 5, 5);
+                    freeHandVect.add(new Circle(e.getX(), e.getY(), 5, 5, color,stroke));
                 }
                 updateUI();
             }
@@ -190,7 +203,8 @@ public class Panel extends JPanel implements ActionListener {
     }
 
     @Override
-    protected void paintComponent(Graphics g) {
+    protected void paintComponent(Graphics g2d) {
+        Graphics2D g = (Graphics2D) g2d;
         super.paintComponent(g);
 //draw rectangle for first time
         if (checkrec == true) {
@@ -204,6 +218,7 @@ public class Panel extends JPanel implements ActionListener {
                 default ->
                     g.setColor(Color.BLACK);
             }//check if fill checkedin and draw line
+g.setStroke(stroke);
             if (checkfill == true) {
                 int width = Math.abs(x1 - x2);
                 int height = Math.abs(y1 - y2);
@@ -226,6 +241,8 @@ public class Panel extends JPanel implements ActionListener {
                 default ->
                     g.setColor(Color.BLACK);
             }
+            
+            g.setStroke(stroke);
             g.drawLine(x1, y1, x2, y2);
         } else if (checkcir == true) {
 
@@ -239,6 +256,7 @@ public class Panel extends JPanel implements ActionListener {
                 default ->
                     g.setColor(Color.BLACK);
             }
+            g.setStroke(stroke);
             if (checkfill == true) {
                 int width = Math.abs(x1 - x2);
                 int height = Math.abs(y1 - y2);
@@ -249,13 +267,13 @@ public class Panel extends JPanel implements ActionListener {
                 g.drawOval(x1, y1, width, height);
             }
 
-        }else if(checkearser==true){
-         g.setColor(Color.WHITE);
-         g.fillRect(x1, y1, 15, 15);
-         
-        }
-        else if(checkfreehand==true){
-        switch (color) {
+        } else if (checkearser == true) {
+            g.setColor(Color.WHITE);
+            g.setStroke(stroke);
+            g.fillRect(x1, y1, 15, 15);
+
+        } else if (checkfreehand == true) {
+            switch (color) {
                 case 1 ->
                     g.setColor(Color.RED);
                 case 2 ->
@@ -265,7 +283,8 @@ public class Panel extends JPanel implements ActionListener {
                 default ->
                     g.setColor(Color.BLACK);
             }
-        g.fillOval(x1, y1, 5, 5);
+            g.setStroke(stroke);
+            g.fillOval(x1, y1, 5, 5);
         }
 
         // to repaint the saved shapes in the vectors
@@ -281,6 +300,8 @@ public class Panel extends JPanel implements ActionListener {
                 default ->
                     g.setColor(Color.BLACK);
             }
+             g.setStroke(recVect.get(i).getStroke());
+
             g.drawRect(recVect.get(i).getxStart(), recVect.get(i).getyStart(), recVect.get(i).getWidth(), recVect.get(i).getHight());
         }
         for (int i = 0; i < lineVect.size(); i++) {
@@ -294,6 +315,7 @@ public class Panel extends JPanel implements ActionListener {
                 default ->
                     g.setColor(Color.BLACK);
             }
+            g.setStroke(lineVect.get(i).getStroke());
             g.drawLine(lineVect.get(i).getxStart(), lineVect.get(i).getyStart(), lineVect.get(i).getxEnd(), lineVect.get(i).getyEnd());
         }
         for (int i = 0; i < circleVect.size(); i++) {
@@ -307,6 +329,7 @@ public class Panel extends JPanel implements ActionListener {
                 default ->
                     g.setColor(Color.BLACK);
             }
+            g.setStroke(circleVect.get(i).getStroke());
             g.drawOval(circleVect.get(i).getX(), circleVect.get(i).getY(), circleVect.get(i).getWidth(), circleVect.get(i).getHeight());
         }
 
@@ -322,6 +345,8 @@ public class Panel extends JPanel implements ActionListener {
                 default ->
                     g.setColor(Color.BLACK);
             }
+             g.setStroke(fillRecVect.get(i).getStroke());
+
             g.fillRect(fillRecVect.get(i).getxStart(), fillRecVect.get(i).getyStart(), fillRecVect.get(i).getWidth(), fillRecVect.get(i).getHight());
         }
         for (int i = 0; i < fillCircleVect.size(); i++) {
@@ -335,16 +360,11 @@ public class Panel extends JPanel implements ActionListener {
                 default ->
                     g.setColor(Color.BLACK);
             }
+             g.setStroke(fillCircleVect.get(i).getStroke());
+
             g.fillOval(fillCircleVect.get(i).getX(), fillCircleVect.get(i).getY(), fillCircleVect.get(i).getWidth(), fillCircleVect.get(i).getHeight());
         }
-        
-        for (int i = 0; i < earserVect.size(); i++) // Draw all prevoius lines stored in the Vector
-        {
-           g.setColor(Color.WHITE);
-            
-            g.fillRect(earserVect.get(i).getxStart(), earserVect.get(i).getyStart(), earserVect.get(i).getWidth(), earserVect.get(i).getHight());
-        }
-        
+
         for (int i = 0; i < freeHandVect.size(); i++) {
             switch (freeHandVect.get(i).getColor()) {
                 case 1 ->
@@ -356,7 +376,17 @@ public class Panel extends JPanel implements ActionListener {
                 default ->
                     g.setColor(Color.BLACK);
             }
+             g.setStroke(freeHandVect.get(i).getStroke());
+
             g.fillOval(freeHandVect.get(i).getX(), freeHandVect.get(i).getY(), freeHandVect.get(i).getWidth(), freeHandVect.get(i).getHeight());
+        }
+
+        for (int i = 0; i < earserVect.size(); i++) // Draw all prevoius lines stored in the Vector
+        {
+            g.setColor(Color.WHITE);
+ g.setStroke(earserVect.get(i).getStroke());
+
+            g.fillRect(earserVect.get(i).getxStart(), earserVect.get(i).getyStart(), earserVect.get(i).getWidth(), earserVect.get(i).getHight());
         }
 
     }
@@ -369,35 +399,42 @@ public class Panel extends JPanel implements ActionListener {
             checkline = false;
             checkcir = false;
             checkearser = false;
-            checkfreehand=false;
+            checkfreehand = false;
+           
+
         } else if (e.getSource() == line) {
 
             checkline = true;
             checkcir = false;
             checkrec = false;
             checkearser = false;
-            checkfreehand=false;
+            checkfreehand = false;
+
+            stroke = new BasicStroke(2f);
         } else if (e.getSource() == circle) {
 
             checkcir = true;
             checkrec = false;
             checkline = false;
             checkearser = false;
-            checkfreehand=false;
+            checkfreehand = false;
+
         } else if (e.getSource() == earser) {
             checkearser = true;
             checkcir = false;
             checkrec = false;
             checkline = false;
-            checkfreehand=false;
-        }else if(e.getSource()==freehand){
-        checkfreehand=true;
-        checkearser = false;
+            checkfreehand = false;
+
+        } else if (e.getSource() == freehand) {
+            checkfreehand = true;
+            checkearser = false;
             checkcir = false;
             checkrec = false;
             checkline = false;
+
         }
-        
+
         if (e.getSource() == red) {
             color = 1;
 
@@ -417,6 +454,8 @@ public class Panel extends JPanel implements ActionListener {
             fillRecVect.clear();
             earserVect.clear();
             freeHandVect.clear();
+            x1 = y1 = x2 = y2 = 0;
+
             updateUI();
 
         }
@@ -424,9 +463,21 @@ public class Panel extends JPanel implements ActionListener {
             checkfill = true;
         }
         if (fill.isSelected() == false) {
-            checkfill = false;
+            checkfill=false;
         }
-        
+        if (dashed.isSelected()) {
+            checkdashed = true;
+            stroke = new BasicStroke(2f);
+            float[] dash = {2F, 2F};
+            stroke = new BasicStroke(2F, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0F, dash, 2.0F);
+            System.out.println("hello ya dashed");
+        }
+        if (dashed.isSelected() == false) {
+            
+            stroke = new BasicStroke(2f);
+
+        }
+
     }
 
 }

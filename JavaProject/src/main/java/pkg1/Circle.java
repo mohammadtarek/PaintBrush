@@ -4,34 +4,44 @@
  */
 package pkg1;
 
+import java.awt.Stroke;
+
 /**
  *
  * @author Mohammad
  */
 public class Circle {
+
     int width;
     int height;
     int x;
     int y;
     int color;
-
-   
+    Stroke stroke;
 
     public void setColor(int color) {
         this.color = color;
     }
-    
 
     public Circle() {
-        x=y=width=height=color=0;
+        x = y = width = height = color = 0;
     }
 
-    public Circle(int x, int y,int width,int height,int color ) {
+    public Circle(int x, int y, int width, int height, int color, Stroke stroke) {
         this.width = width;
         this.height = height;
         this.x = x;
         this.y = y;
-        this.color=color;
+        this.color = color;
+        this.stroke = stroke;
+    }
+
+    public Stroke getStroke() {
+        return stroke;
+    }
+
+    public void setStroke(Stroke stroke) {
+        this.stroke = stroke;
     }
 
     public int getWidth() {
@@ -49,8 +59,9 @@ public class Circle {
     public int getY() {
         return y;
     }
- public int getColor() {
+
+    public int getColor() {
         return color;
     }
-    
+
 }

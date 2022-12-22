@@ -14,7 +14,7 @@ public class JavaProject {
 
     public static void main(String[] args) {
         JFrame myFrame = new JFrame();
-        myFrame.setTitle("Draw Lines");
+        myFrame.setTitle("       PAINT BRUSH TOOL");
         myFrame.setSize(1200, 800);
         myFrame.setLocationRelativeTo(null);
         
